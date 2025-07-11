@@ -1,17 +1,22 @@
 // noinspection ExceptionCaughtLocallyJS,JSUnusedGlobalSymbols
 
 const axios = require('axios');
+const { PermissionsBitField } = require('discord.js');
 
 class VibeSync {
     /**
      * @param {Client} Client
+     * @param {Object} [options]
+     * @param {string} [options.baseURL]
+     * @param {number} [options.timeout]
      */
-    constructor(Client) {
+    constructor(Client, options = {}) {
+        if (!Client?.token) throw new Error('Bot-Token is missing. Please provide a valid Discord bot client with a token.');
         this.Client = Client;
         this.api = axios.create({
-            baseURL: 'https://discord.com/api/v10',
-            headers: {Authorization: `Bot ${Client.token}`},
-            timeout: 5000
+            baseURL: options.baseURL || 'https://discord.com/api/v10',
+            headers: { Authorization: `Bot ${Client.token}` },
+            timeout: options.timeout || 7000
         });
     }
 
@@ -21,11 +26,11 @@ class VibeSync {
      * @param {String} channelId
      */
     async _checkPermissions(channelId) {
-        const channel = this.Client.channels.cache.get(channelId);
-        if (!channel) throw new Error(`Channel ${channelId} not found.`);
-        if (channel.type !== 'GUILD_VOICE') throw new Error(`Channel ${channelId} is not a voice channel.`);
-        const permissions = channel.permissionsFor(this.Client.user);
-        if (!permissions?.has('MANAGE_CHANNELS')) throw new Error('Missing MANAGE_CHANNELS permission.');
+        let channel = this.Client.channels.cache.get(channelId) || await this.Client.channels.fetch(channelId).catch(() => null);
+        if (!channel) throw new Error(`Channel ${channelId} not found or could not be fetched.`);
+        if (channel.type !== 2) throw new Error(`Channel ${channelId} is not a voice channel.`);
+        const permissions = channel.permissionsFor(channel.guild.members.me);
+        if (!permissions || !permissions.has(PermissionsBitField.Flags.ManageChannels)) throw new Error('Missing MANAGE_CHANNELS permission.');
     }
 
     /**
@@ -38,9 +43,10 @@ class VibeSync {
         await this._checkPermissions(channelId);
         try {
             const response = await this.api.put(`/channels/${channelId}/voice-status`, { status });
-            if (response.status !== 204) throw new Error(`Unexpected status code: ${response.status}`);
+            if (![200, 204].includes(response.status)) throw new Error(`Unexpected status code: ${response.status}`);
             return { success: true };
         } catch (error) {
+            console.error('API Fehler:', error);
             throw new Error(
               error.response?.data?.message
                 ? `API Error: ${error.response.data.message}`
