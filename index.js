@@ -1,4 +1,4 @@
-// noinspection ExceptionCaughtLocallyJS
+// noinspection ExceptionCaughtLocallyJS,JSUnusedGlobalSymbols
 
 const axios = require('axios');
 
