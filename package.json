@@ -1,6 +1,6 @@
 {
   "name": "@devuuuxd/vibesync",
-  "version": "1.0.6",
+  "version": "1.1.0",
   "description": "VibeSync is a simple library for managing custom statuses in Discord Voice Channels. Easily set and update your channel statuses to keep your server engaging and organized.",
   "main": "index.js",
   "scripts": {
@@ -10,7 +10,7 @@
     "type": "git",
     "url": "https://github.com/devuuuxd/VibeSync.git"
   },
-  "author": "devuuu_died",
+  "author": "devuuu_died, Alexander Stolz",
   "license": "MIT",
   "bugs": {
     "url": "https://github.com/devuuuxd/VibeSync/issues"
