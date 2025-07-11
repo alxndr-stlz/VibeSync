@@ -17,7 +17,9 @@
   },
   "homepage": "https://github.com/devuuuxd/VibeSync/blob/main/readme.md",
   "dependencies": {
-    "axios": "^1.7.5",
+    "axios": "^1.7.5"
+  },
+  "devDependencies": {
     "discord.js": "^14.15.3",
     "jest": "^29.7.0"
   },

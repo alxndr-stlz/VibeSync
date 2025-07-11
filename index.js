@@ -10,28 +10,50 @@ class VibeSync {
 
     /**
      * @param {String} ChannelId 
-     * @param {String} status 
-     * @returns {Promise<void>} 
+     * @param {String} status
+     * @returns {Promise<{success: boolean, message: string}>}
      */
     async setVoiceStatus(ChannelId, status) {
         try {
             const response = await axios.put(
                 `https://discord.com/api/v10/channels/${ChannelId}/voice-status`,
-                { status: status.length > 0 ? status : 'Default Status' },
+              {status: status.length > 0 ? status : ''},
                 { headers: { Authorization: `Bot ${this.BotDevu.token}` } }
             );
 
-            console.log(`Voice channel status updated successfully`);
+            if (response.status !== 204) {
+                return {
+                    success: false,
+                    message: `Failed to update voice channel status. Status code: ${response.status}`,
+                };
+            }
+
+            return {
+                success: true,
+                message: 'Voice channel status updated successfully.',
+            };
         } catch (error) {
             if (error.response) {
-                console.error(`API Error (${error.response.status}): ${error.response.data.message}`);
+                return {
+                    success: false,
+                    message: `API Error: ${error.response.data.message}`,
+                };
             } else if (error.request) {
-                console.error('No response received from API');
+                return {
+                    success: false,
+                    message: 'No response received from API.',
+                };
             } else {
-                console.error(`Request Setup Error: ${error.message}`);
+                return {
+                    success: false,
+                    message: `Request Setup Error: ${error.message}`,
+                };
             }
-            throw new Error(`An error occurred: ${error.message}`);
         }
+    }
+
+    async resetVoiceStatus(ChannelId) {
+        return await this.setVoiceStatus(ChannelId, '');
     }
 }
 
