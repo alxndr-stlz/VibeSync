@@ -1,59 +1,63 @@
+// noinspection ExceptionCaughtLocallyJS
+
 const axios = require('axios');
 
 class VibeSync {
     /**
-     * @param {Client} BotDevu 
+     * @param {Client} Client
      */
-    constructor(BotDevu) {
-        this.BotDevu = BotDevu;
+    constructor(Client) {
+        this.Client = Client;
+        this.api = axios.create({
+            baseURL: 'https://discord.com/api/v10',
+            headers: {Authorization: `Bot ${Client.token}`},
+            timeout: 5000
+        });
     }
 
     /**
-     * @param {String} ChannelId 
-     * @param {String} status
-     * @returns {Promise<{success: boolean, message: string}>}
+     * Checks if the bot has the required permissions to manage the voice channel.
+     * @private
+     * @param {String} channelId
      */
-    async setVoiceStatus(ChannelId, status) {
+    async _checkPermissions(channelId) {
+        const channel = this.Client.channels.cache.get(channelId);
+        if (!channel) throw new Error(`Channel ${channelId} not found.`);
+        if (channel.type !== 'GUILD_VOICE') throw new Error(`Channel ${channelId} is not a voice channel.`);
+        const permissions = channel.permissionsFor(this.Client.user);
+        if (!permissions?.has('MANAGE_CHANNELS')) throw new Error('Missing MANAGE_CHANNELS permission.');
+    }
+
+    /**
+     * Sets the voice status of a channel.
+     * @param {String} channelId
+     * @param {String} status
+     * @returns {Promise<{success: boolean}>}
+     */
+    async setVoiceStatus(channelId, status = '') {
+        await this._checkPermissions(channelId);
         try {
-            const response = await axios.put(
-                `https://discord.com/api/v10/channels/${ChannelId}/voice-status`,
-                {status: (typeof status === 'string' && status.length > 0) ? status : ''},
-                { headers: { Authorization: `Bot ${this.BotDevu.token}` } }
-            );
-
-            if (response.status !== 204) {
-                return {
-                    success: false,
-                    message: `Failed to update voice channel status. Status code: ${response.status}`,
-                };
-            }
-
-            return {
-                success: true,
-                message: 'Voice channel status updated successfully.',
-            };
+            const response = await this.api.put(`/channels/${channelId}/voice-status`, { status });
+            if (response.status !== 204) throw new Error(`Unexpected status code: ${response.status}`);
+            return { success: true };
         } catch (error) {
-            if (error.response) {
-                return {
-                    success: false,
-                    message: `API Error: ${error.response.data.message}`,
-                };
-            } else if (error.request) {
-                return {
-                    success: false,
-                    message: 'No response received from API.',
-                };
-            } else {
-                return {
-                    success: false,
-                    message: `Request Setup Error: ${error.message}`,
-                };
-            }
+            throw new Error(
+              error.response?.data?.message
+                ? `API Error: ${error.response.data.message}`
+                : error.request
+                  ? 'No response from API.'
+                  : `Request Error: ${error.message}`
+            );
         }
     }
 
-    async resetVoiceStatus(ChannelId) {
-        return await this.setVoiceStatus(ChannelId, '');
+    /**
+     * Resets the voice status of a channel.
+     * @param {String} channelId
+     * @returns {Promise<{success: boolean}>}
+     */
+    async resetVoiceStatus(channelId) {
+        return await this.setVoiceStatus(channelId, '');
     }
 }
 
