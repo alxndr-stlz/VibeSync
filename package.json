@@ -21,7 +21,7 @@
     "discord.js": "^14.21.0"
   },
   "devDependencies": {
-    "jest": "^29.7.0"
+    "jest": "^30.0.2"
   },
   "keywords": [
     "discord",
