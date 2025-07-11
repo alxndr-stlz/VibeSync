@@ -57,7 +57,7 @@ class VibeSync {
    * @returns {Promise<{success: boolean}>}
    */
   async resetVoiceStatus(channelId) {
-    return await this.setVoiceStatus(channelId, '');
+    return this.setVoiceStatus(channelId, '');
   }
 }
 
