@@ -17,7 +17,7 @@ class VibeSync {
         try {
             const response = await axios.put(
                 `https://discord.com/api/v10/channels/${ChannelId}/voice-status`,
-              {status: status.length > 0 ? status : ''},
+                {status: (typeof status === 'string' && status.length > 0) ? status : ''},
                 { headers: { Authorization: `Bot ${this.BotDevu.token}` } }
             );
 
