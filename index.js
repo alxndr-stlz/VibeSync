@@ -41,7 +41,7 @@ class VibeSync {
       return {success: true};
     } catch (error) {
       console.error('API Fehler:', error);
-      throw new Error(error?.message || 'Unbekannter Fehler bei der API-Anfrage.');
+      throw new Error(error?.message || 'Unexpected error while setting voice status');
     }
   }
 
